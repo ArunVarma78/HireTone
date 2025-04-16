@@ -4,22 +4,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import Link from "next/link";
 import { toast } from "sonner";
+import FormField from "./FormField";
 
 function authFormSchema(type: FormType) {
   return z.object({
-    name: z
-      .string()
-      .min(2, {
-        message: "Username must be at least 2 characters.",
-      })
-      .max(20, {
-        message: "Username must be at most 20 characters.",
-      }),
+    name:
+      type === "sign-up"
+        ? z
+            .string()
+            .min(2, {
+              message: "Username must be at least 2 characters.",
+            })
+            .max(20, {
+              message: "Username must be at most 20 characters.",
+            })
+        : z.string().optional(),
     email: z.string().email({
       message: "Invalid email address",
     }),
@@ -27,15 +32,10 @@ function authFormSchema(type: FormType) {
       message: "Password must be at least 8 characters.",
     }),
   });
-  // .refine((data) => {
-  //   if (type === "sign-in") {
-  //     return data.email && data.password;
-  //   }
-  //   return data.username && data.email && data.password;
-  // });
 }
 
 export default function AuthForm({ type }: { type: FormType }) {
+  const router = useRouter();
   const formSchema = authFormSchema(type);
 
   // 1. Define your form.
@@ -50,12 +50,14 @@ export default function AuthForm({ type }: { type: FormType }) {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     try {
       if (type === "sign-up") {
+        toast.success("Account created successfully!");
+        router.push("/sign-in");
         console.log("Sign up", values);
       } else {
+        toast.success("Signed in successfully!");
+        router.push("/");
         console.log("Sign in", values);
       }
     } catch (error) {
@@ -81,9 +83,31 @@ export default function AuthForm({ type }: { type: FormType }) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-6 mt-4 form"
           >
-            {!isSignIn && <p>Name</p>}
-            <p>Emai</p>
-            <p>Password</p>
+            {!isSignIn && (
+              <FormField
+                control={form.control}
+                name="name"
+                label="Name"
+                placeholder="Your Name"
+              />
+            )}
+
+            <FormField
+              control={form.control}
+              name="email"
+              label="Email"
+              placeholder="Your Email"
+              type="email"
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              label="Password"
+              placeholder="Your Password"
+              type="password"
+            />
+
             <Button className="btn" type="submit">
               {isSignIn ? "Sign in" : "Create an Account"}
             </Button>
