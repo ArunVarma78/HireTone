@@ -1,11 +1,26 @@
 import InterviewCard from "@/components/InterviewCard";
 import { Button } from "@/components/ui/button";
 import { dummyInterviews } from "@/constants";
+import {
+  getCurrentUser,
+  getInterviewsByUserId,
+  getLatestInterviews,
+} from "@/lib/actions/auth.action";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-export default function page() {
+export default async function page() {
+  const user = await getCurrentUser();
+
+  const [userInterviews, latestInterviews] = await Promise.all([
+    await getInterviewsByUserId(user?.id!),
+    await getLatestInterviews({ userId: user?.id! }),
+  ]);
+
+  const hasPastInterviews = userInterviews && userInterviews.length > 0;
+  const hasUpcomingInterviews = latestInterviews && latestInterviews.length > 0;
+
   return (
     <>
       <section className="card-cta">
@@ -34,11 +49,13 @@ export default function page() {
         <h2>Your Interviews</h2>
 
         <div className="interviews-section">
-          {dummyInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id} />
-          ))}
-
-          {/* <p>You haven&apos;t taken any interview yet</p> */}
+          {hasPastInterviews ? (
+            userInterviews.map((interview) => (
+              <InterviewCard {...interview} key={interview.id} />
+            ))
+          ) : (
+            <p>You haven&apos;t taken any interview yet</p>
+          )}
         </div>
       </section>
 
@@ -46,11 +63,13 @@ export default function page() {
         <h2>Take an Interview</h2>
 
         <div className="interviews-section">
-          {dummyInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id} />
-          ))}
-
-          {/* <p>There are no interview available</p> */}
+          {hasUpcomingInterviews ? (
+            latestInterviews.map((interview) => (
+              <InterviewCard {...interview} key={interview.id} />
+            ))
+          ) : (
+            <p>There are no interview available</p>
+          )}
         </div>
       </section>
     </>
