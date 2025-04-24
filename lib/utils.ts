@@ -1,4 +1,4 @@
-import { interviewCovers, mappings } from "@/constants";
+import { mappings } from "@/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -41,7 +41,32 @@ export const getTechLogos = async (techArray: string[]) => {
   return results;
 };
 
-export const getRandomInterviewCover = () => {
-  const randomIndex = Math.floor(Math.random() * interviewCovers.length);
-  return `/covers${interviewCovers[randomIndex]}`;
+export const handleFirebaseError = (error: any) => {
+  if (error?.code) {
+    switch (error.code) {
+      case "auth/email-already-in-use":
+        return "This email is already in use.";
+      case "auth/invalid-email":
+        return "The email address is invalid.";
+      case "auth/weak-password":
+        return "Password is too weak. Please choose a stronger password.";
+      case "auth/user-disabled":
+        return "This account has been disabled. Contact support.";
+      case "auth/user-not-found":
+        return "No account found with this email.";
+      case "auth/wrong-password":
+        return "Incorrect password. Please try again.";
+      case "auth/missing-password":
+        return "Password is required.";
+      case "auth/too-many-requests":
+        return "Too many attempts. Please try again later.";
+      case "auth/account-exists-with-different-credential":
+        return "An account already exists with the same email but different sign-in method.";
+      case "auth/invalid-credential":
+        return "The provided authentication credential is invalid.";
+      default:
+        return "An unexpected error occurred. Please try again.";
+    }
+  }
+  return "An unknown error occurred.";
 };

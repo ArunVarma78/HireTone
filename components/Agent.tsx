@@ -31,6 +31,7 @@ export default function Agent({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [isEnding, setIsEnding] = useState(false);
 
   useEffect(() => {
     const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
@@ -119,6 +120,7 @@ export default function Agent({
   };
 
   const handleDisconnect = () => {
+    setIsEnding(true);
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
@@ -176,14 +178,27 @@ export default function Agent({
 
       <div className="w-full flex justify-center">
         {callStatus !== "ACTIVE" ? (
-          <button className="relative btn-call" onClick={handleCall}>
+          <button
+            className={cn(
+              "relative btn-call",
+              isEnding && "opacity-50 cursor-not-allowed pointer-events-none"
+            )}
+            onClick={handleCall}
+            disabled={isEnding}
+          >
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
                 callStatus !== "CONNECTING" && "hidden"
               )}
             />
-            <span>{isCallInactiveOrFinished ? "Call" : ". . ."}</span>
+            <span>
+              {isEnding
+                ? "Loading..."
+                : isCallInactiveOrFinished
+                ? "Call"
+                : "Loading..."}
+            </span>
           </button>
         ) : (
           <button

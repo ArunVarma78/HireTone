@@ -15,7 +15,7 @@ interface FormFieldProps<T extends FieldValues> {
   type?: "text" | "email" | "password" | "file";
 }
 
-export default function FormField({
+export default function FormField<T extends FieldValues>({
   control,
   name,
   label,
@@ -26,7 +26,7 @@ export default function FormField({
     <Controller
       control={control}
       name={name}
-      render={({ field }) => (
+      render={({ field, fieldState: { error } }) => (
         <FormItem>
           <FormLabel className="label">{label}</FormLabel>
           <FormControl>
@@ -37,7 +37,7 @@ export default function FormField({
               {...field}
             />
           </FormControl>
-          <FormMessage />
+          {error && <FormMessage>{error.message}</FormMessage>}
         </FormItem>
       )}
     />

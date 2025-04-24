@@ -7,6 +7,7 @@ import { z } from "zod";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react"; // Import useState
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { signIn, signUp } from "@/lib/actions/auth.action";
+import { handleFirebaseError } from "@/lib/utils";
 
 function authFormSchema(type: FormType) {
   return z.object({
@@ -34,8 +36,8 @@ function authFormSchema(type: FormType) {
     email: z.string().email({
       message: "Invalid email address",
     }),
-    password: z.string().min(8, {
-      message: "Password must be at least 8 characters.",
+    password: z.string().min(6, {
+      message: "Password must be at least 6 characters.",
     }),
   });
 }
@@ -43,6 +45,7 @@ function authFormSchema(type: FormType) {
 export default function AuthForm({ type }: { type: FormType }) {
   const router = useRouter();
   const formSchema = authFormSchema(type);
+  const [loading, setLoading] = useState(false);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,6 +59,7 @@ export default function AuthForm({ type }: { type: FormType }) {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
     try {
       if (type === "sign-up") {
         const { name, email, password } = values;
@@ -69,7 +73,6 @@ export default function AuthForm({ type }: { type: FormType }) {
           uid: userCredential.user.uid,
           name: name!,
           email,
-          password,
         });
 
         if (!result?.success) {
@@ -90,7 +93,7 @@ export default function AuthForm({ type }: { type: FormType }) {
         const idToken = await userCredential.user.getIdToken();
 
         if (!idToken) {
-          toast.error("Sing in failed.");
+          toast.error("Sign in failed.");
           return;
         }
 
@@ -102,9 +105,11 @@ export default function AuthForm({ type }: { type: FormType }) {
         toast.success("Signed in successfully!");
         router.push("/");
       }
-    } catch (error) {
-      console.log("Error submitting form", error);
-      toast.error(`There was an error : ${error}`);
+    } catch (error: any) {
+      const errorMessage = handleFirebaseError(error);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -150,8 +155,12 @@ export default function AuthForm({ type }: { type: FormType }) {
               type="password"
             />
 
-            <Button className="btn" type="submit">
-              {isSignIn ? "Sign in" : "Create an Account"}
+            <Button className="btn" type="submit" disabled={loading}>
+              {loading
+                ? "Loading..."
+                : isSignIn
+                ? "Sign in"
+                : "Create an Account"}
             </Button>
           </form>
         </Form>

@@ -2,6 +2,7 @@
 
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
+import { handleFirebaseError } from "../utils";
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
 
@@ -28,17 +29,11 @@ export async function signUp(params: SignUpParams) {
     };
   } catch (error: any) {
     console.log("Error creating user", error);
-
-    if (error.code === "auth/email-already-exists") {
-      return {
-        success: false,
-        message: "This email is already in use",
-      };
-    }
+    const errorMessage = handleFirebaseError(error); // Use the utility function
 
     return {
       success: false,
-      message: "Failed to create an account",
+      message: errorMessage,
     };
   }
 }
@@ -52,17 +47,18 @@ export async function signIn(params: SignInParams) {
     if (!userRecord) {
       return {
         success: false,
-        message: "User does not exist. Create an accound instead.",
+        message: "User does not exist. Create an account instead.",
       };
     }
 
     await setSessionCookie(idToken);
   } catch (error: any) {
     console.log("Error signing in", error);
+    const errorMessage = handleFirebaseError(error);
 
     return {
       success: false,
-      message: "Failed to sign in",
+      message: errorMessage,
     };
   }
 }
