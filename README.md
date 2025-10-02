@@ -4,8 +4,7 @@ HireTone is a **full-stack real-time AI voice interview platform** that enables 
 It integrates **Firebase** for authentication/storage, **VAPI** for real-time audio streaming, and **Google Generative AI** for intelligent responses.
 
 
-> ⚠️ **Note:** The live demo may not work properly because **VAPI has changed its policy** and no longer offers free usage.  
-> To use this project fully, you will need to configure your own **VAPI credentials**.
+> ⚠️ **Note:** The live demo may not work properly because **VAPI has changed its policy** and no longer offers free usage. To use this project fully, you will need to configure your own **VAPI credentials**.
 
 ---
 
@@ -89,7 +88,6 @@ NEXT_PUBLIC_VAPI_WORKFLOW_ID=your_vapi_workflow_id
 
 ### Run Locally
 ```bash
-npm install
 npm run dev
 ```
 Visit: http://localhost:3000
